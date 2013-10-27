@@ -1,8 +1,64 @@
 package Plack::App::WebSocket::Connection;
 use strict;
 use warnings;
+use Carp;
+use Scalar::Util qw(weaken);
+use Devel::GlobalDestruction ();
+use AnyEvent;
 
 our $VERSION = "0.01";
+
+sub new {
+    my ($class, $conn, $responder) = @_;
+    my $self = bless {
+        connection => $conn,
+        responder => $responder
+    }, $class;
+    return $self;
+}
+
+sub on {
+    my ($self, %handlers) = @_;
+    weaken $self;
+    foreach my $event (keys %handlers) {
+        my $handler = $handlers{$event};
+        croak "handler for event $event must be a code-ref" if ref($handler) ne "CODE";
+        if($event eq "message") {
+            $self->{connection}->on(each_message => sub {
+                $handler->($self, $_[1]->body) if $self;
+            });
+        }elsif($event eq "finish") {
+            $self->{connection}->on(finish => sub {
+                $handler->($self) if $self;
+            });
+        }else {
+            croak "Unknown event: $event";
+        }
+    }
+}
+
+sub send {
+    my ($self, $message) = @_;
+    $self->{connection}->send($message);
+}
+
+sub close {
+    my ($self) = @_;
+    $self->{connection}->close;
+}
+
+my $WAIT_FOR_FLUSHING_SEC = 5;
+
+sub DESTROY {
+    my ($self) = @_;
+    return if Devel::GlobalDestruction::in_global_destruction;
+    my $responder = $self->{responder};
+    my $w; $w = AnyEvent->timer(after => $WAIT_FOR_FLUSHING_SEC, cb => sub {
+        $responder->([200, ["Content-Type", "text/plain"], ["WebSocket finished"]]);
+        undef $w;
+        undef $responder;
+    });
+}
 
 1;
 

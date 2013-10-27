@@ -7,7 +7,7 @@ use Test::More;
 
 our @EXPORT_OK = qw(set_timeout);
 
-my $TIMEOUT_DEFAULT_SEC = 30;
+my $TIMEOUT_DEFAULT_SEC = 10;
 
 sub set_timeout {
     my $w; $w = AnyEvent->timer(after => $TIMEOUT_DEFAULT_SEC, cb => sub {
@@ -18,6 +18,3 @@ sub set_timeout {
 }
 
 1;
-
-
-

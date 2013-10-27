@@ -15,11 +15,16 @@ sub run_tests {
     set_timeout;
     my $app = Plack::App::WebSocket->new(on_establish => sub {
         my $conn = shift;
+        note("server established.");
         $conn->on(message => sub {
             my ($conn, $msg) = @_;
+            note("server received message.");
             $conn->send($msg);
         });
-        $conn->on(finish => sub { undef $conn });
+        $conn->on(finish => sub {
+            note("server finished.");
+            undef $conn;
+        });
         $conn->send("echo started");
     });
     my $port = empty_port();
@@ -37,11 +42,19 @@ sub run_tests {
     note("--- create new connection for each test");
     foreach my $test (@test_data) {
         my $conn = $client->connect("ws://127.0.0.1:$port/")->recv;
+        note("client established.");
         my $cv_fin = AnyEvent->condvar;
         my @messages = ();
-        $conn->on(each_message => sub { push(@messages, $_[1]->body) });
-        $conn->on(finish => sub { $cv_fin->send });
+        $conn->on(each_message => sub {
+            note("client received message.");
+            push(@messages, $_[1]->body);
+        });
+        $conn->on(finish => sub {
+            note("client finished.");
+            $cv_fin->send;
+        });
         $conn->send($test->{data});
+        $conn->close;
         $cv_fin->recv;
         is_deeply(\@messages, ["echo started", $test->{data}], "new conn: $test->{label} OK");
     }
@@ -61,6 +74,7 @@ sub run_tests {
             push(@exp_message, {label => $test->{label}, exp => $test->{data}});
             $conn->send($test->{data});
         }
+        $conn->close;
         $cv_fin->recv;
         is(scalar(@exp_message), 0, "expected messages are all received.");
     }
