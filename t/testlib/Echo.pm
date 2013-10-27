@@ -2,9 +2,10 @@ package testlib::Echo;
 use strict;
 use warnings;
 use Test::More;
-use testlib::Util qw(set_timeout);
+use testlib::Util qw(set_timeout run_server);
+use utf8;
+use Encode;
 
-use Net::EmptyPort qw(empty_port);  ## should they be in Test::Requires?
 use AnyEvent::WebSocket::Client;
 use AnyEvent;
 
@@ -16,6 +17,7 @@ sub run_tests {
     my $app = Plack::App::WebSocket->new(on_establish => sub {
         my $conn = shift;
         note("server established.");
+        isa_ok($conn, "Plack::App::WebSocket::Connection");
         $conn->on(message => sub {
             my ($conn, $msg) = @_;
             note("server received message.");
@@ -27,8 +29,7 @@ sub run_tests {
         });
         $conn->send("echo started");
     });
-    my $port = empty_port();
-    my $server_guard = $server_runner->($port, $app->to_app);
+    my ($port, $server_guard) = run_server($server_runner, $app->to_app);
 
     my @test_data = (
         {label => "8 bytes", data => "AAAABBBB"},
@@ -36,6 +37,7 @@ sub run_tests {
         {label => "zero", data => 0},
         {label => "256 bytes", data => "A" x 256},
         {label => "64 ki bytes", data => "A" x (64 * 1024)},
+        {label => "UTF-8 encoded text", data => Encode::encode("utf8", 'ＵＴＦー８ ＴＥＸＴ')},
     );
 
     my $client = AnyEvent::WebSocket::Client->new;
