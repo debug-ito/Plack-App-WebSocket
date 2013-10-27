@@ -16,14 +16,14 @@ sub new {
     my $self = $class->SUPER::new(@args);
     croak "on_establish param is mandatory" if not defined $self->{on_establish};
     croak "on_establish param must be a code-ref" if ref($self->{on_establish}) ne "CODE";
-    $self->{on_fallback} ||= \&_default_on_fallback;
-    croak "on_fallback param must be a code-ref" if ref($self->{on_fallback}) ne "CODE";
+    $self->{on_error} ||= \&_default_on_error;
+    croak "on_error param must be a code-ref" if ref($self->{on_error}) ne "CODE";
     
     $self->{websocket_server} = AnyEvent::WebSocket::Server->new();
     return $self;
 }
 
-sub _default_on_fallback {
+sub _default_on_error {
     my ($env) = @_;
     my $res = Plack::Response->new;
     $res->content_type("text/plain");
@@ -57,7 +57,7 @@ sub call {
     my ($self, $env) = @_;
     if(!$env->{"psgi.streaming"} || !$env->{"psgi.nonblocking"} || !$env->{"psgix.io"}) {
         $env->{$ERROR_ENV} = "not supported by the PSGI server";
-        return $self->{on_fallback}->($env);
+        return $self->{on_error}->($env);
     }
     my $cv_conn = $self->{websocket_server}->establish_psgi($env, $env->{"psgix.io"});
     return sub {
@@ -67,7 +67,7 @@ sub call {
             my ($conn) = try { $cv_conn->recv };
             if(!$conn) {
                 $env->{$ERROR_ENV} = "invalid request";
-                _respond_via($responder, $self->{on_fallback}->($env));
+                _respond_via($responder, $self->{on_error}->($env));
                 return;
             }
             $self->{on_establish}->(Plack::App::WebSocket::Connection->new($conn, $responder));
@@ -92,7 +92,7 @@ Plack::App::WebSocket - WebSocket server as a PSGI application
     
     builder {
         mount "/websocket" => Plack::App::WebSocket->new(
-            on_fallback => sub {
+            on_error => sub {
                 my $env = shift;
                 return [500, ["Content-Type" => "text/plain"], ["Error: " . $env->{"plack.app.websocket.error"}]];
             },
@@ -165,7 +165,7 @@ Make sure you keep C<$connection> object as long as you need it.
 If you lose reference to C<$connection> object and it's destroyed,
 the WebSocket connection (and its underlying transport connection) is closed.
 
-=item C<on_fallback> => PSGI_APP (optional)
+=item C<on_error> => PSGI_APP (optional)
 
 A subroutine reference that is called when some error
 happens while processing a request.
@@ -188,7 +188,7 @@ See below for detail.
 =head1 C<plack.app.websocket.error> ENVIRONMENT STRINGS
 
 Below is the list of possible values of C<plack.app.websocket.error> L<PSGI> environment parameter.
-It is set in the C<on_fallback> L<PSGI> applincation.
+It is set in the C<on_error> L<PSGI> applincation.
 
 =over
 

@@ -2,7 +2,6 @@ package testlib::Cycle;
 use strict;
 use warnings;
 use Test::More;
-use Test::Builder;
 use Plack::App::WebSocket;
 use AnyEvent::WebSocket::Client;
 use testlib::Util qw(set_timeout run_server);
