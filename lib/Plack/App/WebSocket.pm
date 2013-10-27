@@ -2,7 +2,8 @@ package Plack::App::WebSocket;
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
+use Plack::App::WebSocket::Connection; our $VERSION = $Plack::App::WebSocket::Connection::VERSION;
+
 
 1;
 
@@ -29,8 +30,8 @@ Plack::App::WebSocket - WebSocket server as a PSGI application
                 my ($conn) = @_; ## Plack::App::WebSocket::Connection object
                 $conn->on(
                     message => sub {
-                        my ($conn, $data) = @_;
-                        $conn->send($data);
+                        my ($conn, $msg) = @_;
+                        $conn->send($msg);
                     },
                     finish => sub {
                         undef $conn;

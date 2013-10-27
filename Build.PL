@@ -7,7 +7,7 @@ my $builder = Module::Build->new(
     module_name         => 'Plack::App::WebSocket',
     license             => 'perl',
     dist_author         => q{Toshio Ito <toshioito@cpan.org>},
-    dist_version_from   => 'lib/Plack/App/WebSocket.pm',
+    dist_version_from   => 'lib/Plack/App/WebSocket/Connection.pm',
     build_requires => {
         'Test::More' => 0,
     },
