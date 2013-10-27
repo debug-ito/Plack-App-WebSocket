@@ -6,7 +6,7 @@ use Test::More;
 my @TEST_MODULES;
 
 BEGIN {
-    @TEST_MODULES = qw(Echo Cycle Error);
+    @TEST_MODULES = qw(Echo Cycle Error Responder);
     foreach my $test_module (@TEST_MODULES) {
         require "testlib/$test_module.pm";
     }

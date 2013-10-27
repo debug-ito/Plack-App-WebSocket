@@ -47,7 +47,7 @@ sub close {
     $self->{connection}->close;
 }
 
-my $WAIT_FOR_FLUSHING_SEC = 5;
+our $WAIT_FOR_FLUSHING_SEC = 5;
 
 sub DESTROY {
     my ($self) = @_;

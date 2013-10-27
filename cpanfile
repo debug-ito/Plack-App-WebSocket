@@ -16,4 +16,5 @@ on "test" => sub {
     requires "Net::EmptyPort";
     requires "AnyEvent::WebSocket::Client" => "0.18";
     requires "Scalar::Util";
+    requires "Plack::Util";
 };

@@ -8,7 +8,6 @@ use Test::Requires {
 use AnyEvent;
 use AnyEvent::HTTP qw(http_get);
 use Plack::App::WebSocket;
-use AnyEvent::WebSocket::Client;
 use testlib::Util qw(set_timeout run_server);
 
 sub _create_app {
