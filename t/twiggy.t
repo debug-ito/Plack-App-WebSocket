@@ -3,13 +3,13 @@ use warnings;
 use Test::More;
 use FindBin;
 use lib ($FindBin::RealBin);
-use testlib::Echo;
+use testlib::Master;
 use Test::Requires {
     "Twiggy::Server" => "0"
 };
 use Twiggy::Server;
 
-testlib::Echo::run_tests sub {
+testlib::Master::run_tests sub {
     my ($port, $app) = @_;
     my $server = Twiggy::Server->new(
         host => "127.0.0.1", port => $port
@@ -18,3 +18,4 @@ testlib::Echo::run_tests sub {
     return $server;
 };
 
+done_testing;

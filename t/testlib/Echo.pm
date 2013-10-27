@@ -80,9 +80,6 @@ sub run_tests {
         $cv_fin->recv;
         is(scalar(@exp_message), 0, "expected messages are all received.");
     }
-    
-    
-    done_testing;
 }
 
 1;
