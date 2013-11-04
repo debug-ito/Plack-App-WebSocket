@@ -52,12 +52,22 @@ our $WAIT_FOR_FLUSHING_SEC = 5;
 sub DESTROY {
     my ($self) = @_;
     return if Devel::GlobalDestruction::in_global_destruction;
-    $self->{connection}->close();  ## explicit close because $responder may keep the socket.
+    my $connection = $self->{connection};
+    $connection->close();  ## explicit close because $responder may keep the socket.
     my $responder = $self->{responder};
     my $w; $w = AnyEvent->timer(after => $WAIT_FOR_FLUSHING_SEC, cb => sub {
         $responder->([200, ["Content-Type", "text/plain"], ["WebSocket finished"]]);
         undef $w;
         undef $responder;
+
+        ## Prolong $connection's life as long as $responder. This is
+        ## necessary to make sure $connection actively shuts down the
+        ## socket. If $connection is destroyed immediately and the
+        ## kernel's write buffer is full, $connection may fail to shut
+        ## down the socket (because $connection delays the active
+        ## shutdown after sending all the buffered data). If that
+        ## happens, the socket stays open, which is bad.
+        undef $connection;
     });
 }
 
