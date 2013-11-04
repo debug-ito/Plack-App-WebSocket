@@ -12,28 +12,46 @@ sub new {
     my ($class, $conn, $responder) = @_;
     my $self = bless {
         connection => $conn,
-        responder => $responder
+        responder => $responder,
+        handlers => {
+            message => [],
+            finish  => [],
+        },
     }, $class;
+    $self->_setup_internal_event_handlers();
     return $self;
+}
+
+sub _setup_internal_event_handlers {
+    my ($self) = @_;
+    weaken $self;
+    $self->{connection}->on(each_message => sub {
+        return if !defined($self);
+        my $strong_self = $self; ## make sure $self is alive during callback execution
+        $_->($self, $_[1]->body) foreach @{$self->{handlers}{message}};
+    });
+    $self->{connection}->on(finish => sub {
+        return if !defined($self);
+        my $strong_self = $self; ## make sure $self is alive during callback execution
+        $_->($self) foreach @{$self->{handlers}{finish}};
+    });
+}
+
+sub _clear_event_handlers {
+    my ($self) = @_;
+    foreach my $handler_list (values %{$self->{handlers}}) {
+        @$handler_list = ();
+    }
 }
 
 sub on {
     my ($self, %handlers) = @_;
-    weaken $self;
     foreach my $event (keys %handlers) {
         my $handler = $handlers{$event};
         croak "handler for event $event must be a code-ref" if ref($handler) ne "CODE";
-        if($event eq "message") {
-            $self->{connection}->on(each_message => sub {
-                $handler->($self, $_[1]->body) if $self;
-            });
-        }elsif($event eq "finish") {
-            $self->{connection}->on(finish => sub {
-                $handler->($self) if $self;
-            });
-        }else {
-            croak "Unknown event: $event";
-        }
+        my $handler_list = $self->{handlers}{$event};
+        croak "Unknown event: $event" if not defined $handler_list;
+        push(@$handler_list, $handler);
     }
 }
 
@@ -52,6 +70,7 @@ our $WAIT_FOR_FLUSHING_SEC = 5;
 sub DESTROY {
     my ($self) = @_;
     return if Devel::GlobalDestruction::in_global_destruction;
+    $self->_clear_event_handlers();
     my $connection = $self->{connection};
     $connection->close();  ## explicit close because $responder may keep the socket.
     my $responder = $self->{responder};
