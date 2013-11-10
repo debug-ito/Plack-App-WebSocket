@@ -1,13 +1,1 @@
-
-=pod
-
-=head1 NAME
-
-Plack::App::WebSocket - WebSocket server as a PSGI application
-
-=head1 DESCRIPTION
-
-This module is currently under development. Please wait for CPAN release.
-
-=cut
-
+lib/Plack/App/WebSocket.pm
