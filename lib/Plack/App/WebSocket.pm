@@ -94,7 +94,9 @@ Plack::App::WebSocket - WebSocket server as a PSGI application
         mount "/websocket" => Plack::App::WebSocket->new(
             on_error => sub {
                 my $env = shift;
-                return [500, ["Content-Type" => "text/plain"], ["Error: " . $env->{"plack.app.websocket.error"}]];
+                return [500,
+                        ["Content-Type" => "text/plain"],
+                        ["Error: " . $env->{"plack.app.websocket.error"}]];
             },
             on_establish => sub {
                 my ($conn) = @_; ## Plack::App::WebSocket::Connection object
@@ -188,7 +190,7 @@ See below for detail.
 =head1 C<plack.app.websocket.error> ENVIRONMENT STRINGS
 
 Below is the list of possible values of C<plack.app.websocket.error> L<PSGI> environment parameter.
-It is set in the C<on_error> L<PSGI> applincation.
+It is set in the C<on_error> callback.
 
 =over
 
@@ -231,6 +233,10 @@ WebSocket implementation for L<Mojolicious> Web application framework.
 =item L<PocketIO>
 
 Socket.io implementation as a L<PSGI> application.
+
+=item L<SockJS>
+
+SockJS implementation as a L<PSGI> application.
 
 =back
 
