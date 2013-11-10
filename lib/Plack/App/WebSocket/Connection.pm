@@ -49,6 +49,7 @@ sub on {
     foreach my $event (keys %handlers) {
         my $handler = $handlers{$event};
         croak "handler for event $event must be a code-ref" if ref($handler) ne "CODE";
+        $event = "finish" if $event eq "close";
         my $handler_list = $self->{handlers}{$event};
         croak "Unknown event: $event" if not defined $handler_list;
         push(@$handler_list, $handler);
@@ -146,7 +147,7 @@ C<$handler> is called for each message received via the C<$connection>.
 Argument C<$connection> is the L<Plack::App::WebSocket::Connection> object,
 and C<$message> is a non-decoded byte string of the received message.
 
-=item C<"finish">
+=item C<"finish"> (alias: C<"close">)
 
     $handler->($connection)
 

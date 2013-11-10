@@ -60,7 +60,7 @@ sub run_tests {
             push(@finish_tokens, 2);
             undef $conn;
         });
-        $conn->on(finish => sub {
+        $conn->on(close => sub {
             push(@finish_tokens, 3);
             $cv_finish->end;
         });
