@@ -18,3 +18,8 @@ on "test" => sub {
     requires "Scalar::Util";
     requires "Plack::Util";
 };
+
+on 'configure' => sub {
+    requires 'Module::Build::Pluggable',           '0.09';
+    requires 'Module::Build::Pluggable::CPANfile', '0.02';
+};
