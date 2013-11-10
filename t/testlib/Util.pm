@@ -11,7 +11,9 @@ our @EXPORT_OK = qw(set_timeout run_server);
 my $TIMEOUT_DEFAULT_SEC = 10;
 
 sub set_timeout {
-    my $w; $w = AnyEvent->timer(after => $TIMEOUT_DEFAULT_SEC, cb => sub {
+    my ($timeout) = @_;
+    $timeout ||= $TIMEOUT_DEFAULT_SEC;
+    my $w; $w = AnyEvent->timer(after => $timeout, cb => sub {
         undef $w;
         fail("Timeout");
         exit 2;
