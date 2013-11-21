@@ -6,8 +6,9 @@ use Carp;
 use Plack::Response;
 use AnyEvent::WebSocket::Server;
 use Try::Tiny;
+use Plack::App::WebSocket::Connection;
 
-use Plack::App::WebSocket::Connection; our $VERSION = $Plack::App::WebSocket::Connection::VERSION;
+our $VERSION = "0.02";
 
 my $ERROR_ENV = "plack.app.websocket.error";
 

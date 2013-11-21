@@ -6,7 +6,7 @@ use Scalar::Util qw(weaken);
 use Devel::GlobalDestruction ();
 use AnyEvent;
 
-our $VERSION = "0.01";
+our $VERSION = "0.02";
 
 sub new {
     my ($class, $conn, $responder) = @_;
