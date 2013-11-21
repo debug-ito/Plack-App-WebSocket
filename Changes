@@ -1,5 +1,11 @@
 Revision history for Plack-App-WebSocket
 
+0.02    2013-11-21
+        [BUGFIX]
+        - Sometimes installation failed because $VERSION was inspected
+          before prerequisites were installed. This bug is fixed now
+          that $VERSIONs are set by literals.
+
 0.01    2013-11-10
         First version, released on an unsuspecting world.
 
