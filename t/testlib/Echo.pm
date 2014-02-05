@@ -15,9 +15,11 @@ sub run_tests {
     my ($server_runner) = @_;
     set_timeout;
     my $app = Plack::App::WebSocket->new(on_establish => sub {
-        my $conn = shift;
+        my ($conn, $env) = @_;
         note("server established.");
         isa_ok($conn, "Plack::App::WebSocket::Connection");
+        is(ref($env), "HASH", "env is a hash-ref");
+        is(uc($env->{REQUEST_METHOD}), "GET", "WebSocket request must be GET");
         $conn->on(message => sub {
             my ($conn, $msg) = @_;
             note("server received message.");

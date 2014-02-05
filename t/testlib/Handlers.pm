@@ -34,7 +34,8 @@ sub run_tests {
     
     set_timeout;
     my $app = Plack::App::WebSocket->new(on_establish => sub {
-        my $conn = shift;
+        my ($conn, $env) = @_;
+        is(ref($env), "HASH", "env must be a hash-ref");
         $cv_finish->begin;
         $conn->on(message => sub {
             my ($conn, $msg) = @_;

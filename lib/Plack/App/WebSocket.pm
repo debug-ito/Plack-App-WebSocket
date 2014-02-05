@@ -100,7 +100,8 @@ Plack::App::WebSocket - WebSocket server as a PSGI application
                         ["Error: " . $env->{"plack.app.websocket.error"}]];
             },
             on_establish => sub {
-                my ($conn) = @_; ## Plack::App::WebSocket::Connection object
+                my $conn = shift; ## Plack::App::WebSocket::Connection object
+                my $env = shift;  ## PSGI env
                 $conn->on(
                     message => sub {
                         my ($conn, $msg) = @_;
@@ -159,9 +160,10 @@ WebSocket connection to a client.
 
 The code is called like
 
-    $code->($connection)
+    $code->($connection, $psgi_env)
 
-where C<$connection> is a L<Plack::App::WebSocket::Connection> object.
+where C<$connection> is a L<Plack::App::WebSocket::Connection> object
+and C<$psgi_env> is the PSGI environment object for the connection request.
 You can use the C<$connection> to communicate with the client.
 
 Make sure you keep C<$connection> object as long as you need it.
@@ -251,7 +253,7 @@ L<https://github.com/debug-ito/Plack-App-WebSocket>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2013 Toshio Ito.
+Copyright 2014 Toshio Ito.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
