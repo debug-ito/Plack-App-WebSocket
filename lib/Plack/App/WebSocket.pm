@@ -71,7 +71,7 @@ sub call {
                 _respond_via($responder, $self->{on_error}->($env));
                 return;
             }
-            $self->{on_establish}->(Plack::App::WebSocket::Connection->new($conn, $responder));
+            $self->{on_establish}->(Plack::App::WebSocket::Connection->new($conn, $responder), $env);
         });
     };
 }
