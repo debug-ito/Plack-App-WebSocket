@@ -17,6 +17,7 @@ my $builder = Module::Build::Pluggable->new(
     },
     meta_add => {
         resources => {
+            bugtracker => 'https://github.com/debug-ito/Plack-App-WebSocket/issues',
             repository => 'git://github.com/debug-ito/Plack-App-WebSocket.git'
         }
     }

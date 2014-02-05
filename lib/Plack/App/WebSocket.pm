@@ -8,7 +8,7 @@ use AnyEvent::WebSocket::Server;
 use Try::Tiny;
 use Plack::App::WebSocket::Connection;
 
-our $VERSION = "0.02";
+our $VERSION = "0.03";
 
 my $ERROR_ENV = "plack.app.websocket.error";
 
@@ -246,6 +246,10 @@ SockJS implementation as a L<PSGI> application.
 =head1 AUTHOR
 
 Toshio Ito, C<< <toshioito at cpan.org> >>
+
+=head1 CONTRIBUTORS
+
+leedo
 
 =head1 REPOSITORY
 
