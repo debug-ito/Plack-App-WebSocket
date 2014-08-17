@@ -1,5 +1,9 @@
 Revision history for Plack-App-WebSocket
 
+0.04    2014-08-17
+        [PACKAGING]
+        - Migrate to Module::Build::Prereqs::FromCPANfile.
+
 0.03    2014-02-05
         [ENHANCEMENT]
         - (gh#1) Now on_established callback gets $psgi_env as the second
