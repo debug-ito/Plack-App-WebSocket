@@ -10,6 +10,11 @@ use AnyEvent::HTTP qw(http_get);
 use Plack::App::WebSocket;
 use testlib::Util qw(set_timeout run_server);
 
+sub _str {
+    my ($maybe_str) = @_;
+    return defined($maybe_str) ? "$maybe_str" : "UNDEF";
+}
+
 sub _create_app {
     my %base = (on_establish => sub {
         fail("should not be established.");
@@ -18,14 +23,14 @@ sub _create_app {
         default => Plack::App::WebSocket->new(%base),
         custom => Plack::App::WebSocket->new(%base, on_error => sub {
             my ($env) = @_;
-            my $message = "custom error: " . $env->{"plack.app.websocket.error"};
+            my $message = "custom error: " . $env->{"plack.app.websocket.error"} . ", " . _str($env->{"plack.app.websocket.error.handshake"});
             return [200, ["Content-Type", "text/plain", "Content-Length", length($message)], [$message]];
         }),
         streaming => Plack::App::WebSocket->new(%base, on_error => sub {
             my ($env) = @_;
             return sub {
                 my $responder = shift;
-                my $message = "error (streaming res): " . $env->{"plack.app.websocket.error"};
+                my $message = "error (streaming res): " . $env->{"plack.app.websocket.error"}. ", " . _str($env->{"plack.app.websocket.error.handshake"});
                 $responder->([200, ["Content-Type", "text/plain", "Content-Length", length($message)], [$message]]);
             };
         })
@@ -50,10 +55,10 @@ sub run_tests {
     foreach my $case (
         {path => "/default/no_io", exp_status => 500, exp_body => qr/.*/},
         {path => "/default/", exp_status => 400, exp_body => qr/.*/},
-        {path => "/custom/no_io", exp_status => 200, exp_body => qr/^custom error: not supported by the PSGI server$/},
-        {path => "/custom/", exp_status => 200, exp_body => qr/^custom error: invalid request$/},
-        {path => "/streaming/no_io", exp_status => 200, exp_body => qr/^error \(streaming res\): not supported by the PSGI server$/},
-        {path => "/streaming/", exp_status => 200, exp_body => qr/^error \(streaming res\): invalid request$/},
+        {path => "/custom/no_io", exp_status => 200, exp_body => qr/^custom error: not supported by the PSGI server, UNDEF$/},
+        {path => "/custom/", exp_status => 200, exp_body => qr/^custom error: invalid request, handshake error/},
+        {path => "/streaming/no_io", exp_status => 200, exp_body => qr/^error \(streaming res\): not supported by the PSGI server, UNDEF$/},
+        {path => "/streaming/", exp_status => 200, exp_body => qr/^error \(streaming res\): invalid request, handshake error/},
     ) {
         my $cv_res = AnyEvent->condvar;
         http_get "http://127.0.0.1:$port$case->{path}", sub { $cv_res->send(@_) };
