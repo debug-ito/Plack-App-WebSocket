@@ -188,6 +188,11 @@ that briefly describes the error (See below).
 By default, it returns a simple non-200 HTTP response according to C<< $psgi_env->{"plack.app.websocket.error"} >>.
 See below for detail.
 
+=item C<websocket_server> => L<AnyEvent::WebSocket::Server> (optional)
+
+The backend L<AnyEvent::WebSocket::Server> instance.
+By default, C<< AnyEvent::WebSocket::Server->new() >> is used.
+
 =back
 
 =head1 C<plack.app.websocket.error> ENVIRONMENT STRINGS
@@ -206,6 +211,7 @@ By default, 500 "Internal Server Error" response is returned for this error.
 =item C<"invalid request">
 
 The client sent an invalid request.
+In this case, C<< $psgi_env->{"plack.app.websocket.error.handshake"} >> keeps the exception thrown by the handshake process.
 
 By default, 400 "Bad Request" response is returned for this error.
 
