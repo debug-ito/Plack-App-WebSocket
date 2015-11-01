@@ -9,7 +9,7 @@ use Try::Tiny;
 use Plack::App::WebSocket::Connection;
 use Scalar::Util qw(blessed);
 
-our $VERSION = "0.04";
+our $VERSION = "0.05";
 
 my $ERROR_ENV = "plack.app.websocket.error";
 

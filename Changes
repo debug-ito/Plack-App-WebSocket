@@ -1,5 +1,11 @@
 Revision history for Plack-App-WebSocket
 
+0.05    2015-11-01
+        [ENHANCEMENT]
+        - Add websocket_server option. (gh#3)
+        - Now the exception from the handshake process is available
+          as $psgi_env->{"plack.app.websocket.error.handshake"}.
+
 0.04    2014-08-17
         [PACKAGING]
         - Migrate to Module::Build::Prereqs::FromCPANfile.
