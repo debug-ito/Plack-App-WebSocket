@@ -4,7 +4,7 @@ requires "Carp";
 requires "Plack::Component";
 requires "Plack::Response";
 requires "AnyEvent";
-requires "AnyEvent::WebSocket::Server";
+requires "AnyEvent::WebSocket::Server" => "0.06";
 requires "Try::Tiny";
 requires "Scalar::Util";
 requires "Devel::GlobalDestruction";
