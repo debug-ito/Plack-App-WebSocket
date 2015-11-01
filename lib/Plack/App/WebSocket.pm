@@ -7,6 +7,7 @@ use Plack::Response;
 use AnyEvent::WebSocket::Server;
 use Try::Tiny;
 use Plack::App::WebSocket::Connection;
+use Scalar::Util qw(blessed);
 
 our $VERSION = "0.04";
 
@@ -19,8 +20,14 @@ sub new {
     croak "on_establish param must be a code-ref" if ref($self->{on_establish}) ne "CODE";
     $self->{on_error} ||= \&_default_on_error;
     croak "on_error param must be a code-ref" if ref($self->{on_error}) ne "CODE";
+
+    if(!defined($self->{websocket_server})) {
+        $self->{websocket_server} = AnyEvent::WebSocket::Server->new();
+    }
+    if(blessed($self->{websocket_server}) && !$self->{websocket_server}->isa("AnyEvent::WebSocket::Server")) {
+        croak "websocket_server param must be a AnyEvent::WebSocket::Server";
+    }
     
-    $self->{websocket_server} = AnyEvent::WebSocket::Server->new();
     return $self;
 }
 
@@ -65,9 +72,14 @@ sub call {
         my $responder = shift;
         $cv_conn->cb(sub {
             my ($cv_conn) = @_;
-            my ($conn) = try { $cv_conn->recv };
+            my ($conn, $error) = try {
+                (scalar($cv_conn->recv), undef);
+            }catch {
+                (undef, $_[0]);
+            };
             if(!$conn) {
                 $env->{$ERROR_ENV} = "invalid request";
+                $env->{"plack.app.websocket.error.handshake"} = $error;
                 _respond_via($responder, $self->{on_error}->($env));
                 return;
             }
