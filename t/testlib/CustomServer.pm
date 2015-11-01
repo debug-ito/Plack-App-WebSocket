@@ -46,7 +46,7 @@ sub run_tests {
     my @got_error_env = ();
     my $planned_exception = undef;
     my $app = Plack::App::WebSocket->new(
-        server => AnyEvent::WebSocket::Server->new(
+        websocket_server => AnyEvent::WebSocket::Server->new(
             handshake => sub {
                 my ($req, $res) = @_;
                 $res->subprotocol('my.websocket.subprotocol');
@@ -87,8 +87,8 @@ sub run_tests {
         like $got_res, qr/on_error is called/, "error response ok";
         is scalar(@got_success_env), 0, "no successful connection";
         is scalar(@got_error_env), 1, "single call to on_error";
-        is $got_error_env["plack.app.websocket.error"], "invalid request";
-        like $got_error_env["plack.app.websocket.error.handshake"], qr/This is user-defiend exception/;
+        is $got_error_env[0]{"plack.app.websocket.error"}, "invalid request";
+        like $got_error_env[0]{"plack.app.websocket.error.handshake"}, qr/This is user-defined exception/;
     }
 }
 
