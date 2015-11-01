@@ -17,6 +17,7 @@ on "test" => sub {
     requires "AnyEvent::WebSocket::Client" => "0.20";
     requires "Scalar::Util";
     requires "Plack::Util";
+    requires "Protocol::WebSocket";
 };
 
 on 'configure' => sub {
