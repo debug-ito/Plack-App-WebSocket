@@ -10,7 +10,7 @@ sub run_tests {
     my ($server_runner) = @_;
     set_timeout;
     {
-        note("on method returns unregister coderef. it is ok to call unregister more than once.");
+        note("-- on method returns unregister coderef. it is ok to call unregister more than once.");
         my $app = Plack::App::WebSocket->new(
             on_establish => sub {
                 my ($conn) = @_;
@@ -54,6 +54,15 @@ sub run_tests {
             "2: do nothing: hoge",
             "2: do unregister"
         ];
+    }
+    {
+        note("-- message event gets unregister coderef");
+        ok 0, "TODO";
+    }
+    {
+        note("-- on method returns list of unregister coderefs, in the same order as the args");
+        note("-- The unregister coderefs can be called in any order.");
+        ok 0, "TODO";
     }
 }
 
