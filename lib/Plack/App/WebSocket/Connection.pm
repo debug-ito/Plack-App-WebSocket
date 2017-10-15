@@ -144,10 +144,11 @@ C<on_establish> callback function.
 
 =head1 OBJECT METHODS
 
-=head2 $connection->on($event => $handler)
+=head2 @unregister = $connection->on($event => $handler, $event2 => $handler2, ...)
 
 Register a callback function to a particular event.
 You can register multiple callbacks to the same event.
+You can register multiple callbacks by a single call to C<on> method.
 
 C<$event> is a string and C<$handler> is a subroutine reference.
 
@@ -163,8 +164,9 @@ C<$handler> is called for each message received via the C<$connection>.
 Argument C<$connection> is the L<Plack::App::WebSocket::Connection> object,
 and C<$message> is a non-decoded byte string of the received message. 
 
-C<$unregister> is a coderef that, when invoked, removes the handler from the 
-list of listeners. See below for an example.
+C<$unregister> is a subroutine reference. When you invoke it, it
+removes the handler from the C<$connection>, so that it'll be never
+called again. See below for an example.
 
 =item C<"finish"> (alias: C<"close">)
 
@@ -175,7 +177,12 @@ Argument C<$connection> is the L<Plack::App::WebSocket::Connection> object.
 
 =back
 
-Returns a coderef or list of coderefs that unregisters the event callbacks when invoked.
+C<on> method returns list of subroutine references that unregister the
+C<$handler>s just registered.
+
+In scalar context, it returns the first subroutine reference.
+
+Example of unregistering:
 
     my $unregister;
     $unregister = $connection->on( message => sub {
