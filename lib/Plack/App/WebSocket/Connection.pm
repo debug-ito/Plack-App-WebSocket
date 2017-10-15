@@ -2,7 +2,7 @@ package Plack::App::WebSocket::Connection;
 use strict;
 use warnings;
 use Carp;
-use Scalar::Util qw(weaken);
+use Scalar::Util qw(weaken refaddr);
 use Devel::GlobalDestruction ();
 use AnyEvent;
 
@@ -28,7 +28,8 @@ sub _setup_internal_event_handlers {
     $self->{connection}->on(each_message => sub {
         return if !defined($self);
         my $strong_self = $self; ## make sure $self is alive during callback execution
-        $_->($self, $_[1]->body) foreach @{$self->{handlers}{message}};
+        $_->($self, $_[1]->body, $self->_cancel_for('message',$_)) 
+            foreach @{$self->{handlers}{message}};
     });
     $self->{connection}->on(finish => sub {
         return if !defined($self);
@@ -44,16 +45,31 @@ sub _clear_event_handlers {
     }
 }
 
+sub _cancel_for {
+    my( $self, $event, $handler ) = @_;
+    return sub {
+        $self->{handlers}{$event} = [
+            grep { refaddr($_) != refaddr($handler) } 
+                 @{ $self->{handlers}{$event} }
+        ];
+    };
+}
+
 sub on {
-    my ($self, %handlers) = @_;
-    foreach my $event (keys %handlers) {
-        my $handler = $handlers{$event};
+    my ($self, @handlers) = @_;
+
+    my @cancel;
+
+    while( my( $event, $handler ) = splice @handlers, 0, 2 ) {
         croak "handler for event $event must be a code-ref" if ref($handler) ne "CODE";
         $event = "finish" if $event eq "close";
         my $handler_list = $self->{handlers}{$event};
         croak "Unknown event: $event" if not defined $handler_list;
         push(@$handler_list, $handler);
+        push @cancel, $self->_cancel_for($event,$handler);
     }
+
+    return wantarray ? @cancel : $cancel[0];
 }
 
 sub send {
@@ -141,11 +157,14 @@ Possible value for C<$event> is:
 
 =item C<"message">
 
-    $handler->($connection, $message)
+    $handler->($connection, $message, $unregister)
 
 C<$handler> is called for each message received via the C<$connection>.
 Argument C<$connection> is the L<Plack::App::WebSocket::Connection> object,
-and C<$message> is a non-decoded byte string of the received message.
+and C<$message> is a non-decoded byte string of the received message. 
+
+C<$unregister> is a coderef that, when invoked, removes the handler from the 
+list of listeners. See below for an example.
 
 =item C<"finish"> (alias: C<"close">)
 
@@ -155,6 +174,22 @@ C<$handler> is called when the C<$connection> is closed.
 Argument C<$connection> is the L<Plack::App::WebSocket::Connection> object.
 
 =back
+
+Returns a coderef or list of coderefs that unregisters the event callbacks when invoked.
+
+    my $unregister;
+    $unregister = $connection->on( message => sub {
+        my( $conn, $message ) = @_;
+        $conn->send( "This will only be sent once" );
+        $unregister->();
+    });
+
+    # could also be written as
+    $connection->on( message => sub {
+        my( $conn, $message, $unregister ) = @_;
+        $conn->send( "This will only be sent once" );
+        $unregister->();
+    });
 
 =head2 $connection->send($message)
 
