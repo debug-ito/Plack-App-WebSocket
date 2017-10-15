@@ -269,6 +269,8 @@ Toshio Ito, C<< <toshioito at cpan.org> >>
 
 leedo
 
+yanick
+
 =head1 REPOSITORY
 
 L<https://github.com/debug-ito/Plack-App-WebSocket>
