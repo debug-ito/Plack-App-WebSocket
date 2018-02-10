@@ -181,7 +181,7 @@ C<$psgi_env> is the PSGI environment object for the connection request,
 and C<\@handshake_results> are extra results from the backend
 L<AnyEvent::WebSocket::Server> instance's handshake callback (which can
 be defined by passing a configured L<AnyEvent::WebSocket::Server> to
-the L</websocket_server> construction parameter).
+the C<websocket_server> constructor parameter).
 You can use the C<$connection> to communicate with the client.
 
 Make sure you keep C<$connection> object as long as you need it.
